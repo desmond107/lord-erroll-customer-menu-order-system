@@ -1,0 +1,30 @@
+{
+  "name": "lord-erroll-platform",
+  "private": true,
+  "version": "1.0.0",
+  "description": "On-premise digital ordering and service platform for The Lord Erroll Gourmet Restaurant, Nairobi.",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "concurrently -n server,web -c green,yellow \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm --workspace server run dev",
+    "dev:web": "npm --workspace web run dev",
+    "build": "npm --workspace web run build",
+    "start": "npm --workspace server run start",
+    "seed": "npm --workspace server run seed",
+    "seed:reset": "npm --workspace server run seed:reset",
+    "backup": "npm --workspace server run backup",
+    "typecheck": "npm --workspace web run typecheck",
+    "test": "npm --workspace server run test",
+    "demo:prices": "node scripts/demo-prices.mjs",
+    "demo:prices:clear": "node scripts/demo-prices.mjs --clear"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

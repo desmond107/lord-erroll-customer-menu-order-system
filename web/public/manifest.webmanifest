@@ -1,0 +1,13 @@
+{
+  "name": "The Lord Erroll",
+  "short_name": "Lord Erroll",
+  "description": "Order from your table at The Lord Erroll Gourmet Restaurant.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FDFBF4",
+  "theme_color": "#1E4032",
+  "icons": [
+    { "src": "/crest.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

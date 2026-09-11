@@ -1,0 +1,368 @@
+/* =====================================================================
+   The Lord Erroll — design tokens and shared furniture.
+   Restraint is the brief: cream cardstock, gold rules, deep green ink.
+   Nothing here loads from the internet; the restaurant runs off its LAN.
+   ===================================================================== */
+
+/* Optional self-hosted display face. Drop the .woff2 files into
+   web/public/fonts/ and this picks them up; without them the stack falls
+   back to a system serif and nothing breaks. */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('/fonts/CormorantGaramond-Regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('/fonts/CormorantGaramond-SemiBold.woff2') format('woff2');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('/fonts/CormorantGaramond-Italic.woff2') format('woff2');
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+
+:root {
+  --green-900: #12271e;
+  --green: #1e4032;
+  --green-600: #2e5a46;
+  --green-300: #6d8c7d;
+
+  --oxblood: #7c1a26;
+  --oxblood-600: #94303c;
+  --oxblood-100: #f3e3e2;
+
+  --gold: #c9a227;
+  --gold-light: #e8c87a;
+  --gold-dark: #9a7b1b;
+  --gold-wash: #f6edd6;
+
+  --cream: #fdfbf4;
+  --parchment: #f4eddd;
+  --card: #fffdf7;
+  --rule: #e2d8c0;
+  --rule-soft: #efe7d5;
+
+  --ink: #2a2118;
+  --ink-soft: #5a4b36;
+  --muted: #92836a;
+
+  --font-display: 'Cormorant Garamond', 'Playfair Display', Baskerville, 'Palatino Linotype',
+    Palatino, 'Book Antiqua', Georgia, serif;
+  --font-body: var(--font-display);
+  --font-numeric: 'Palatino Linotype', Palatino, Georgia, serif;
+
+  --shadow-card: 0 1px 2px rgb(42 33 24 / 0.04), 0 8px 24px -12px rgb(42 33 24 / 0.16);
+  --shadow-lift: 0 2px 4px rgb(42 33 24 / 0.06), 0 18px 40px -18px rgb(42 33 24 / 0.28);
+
+  --radius: 3px;
+  --radius-lg: 5px;
+
+  /* White-glove pacing: deliberate, never snappy. */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --t-fast: 180ms;
+  --t: 280ms;
+  --t-slow: 460ms;
+
+  --page: 1180px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background-color: var(--cream);
+  /* A whisper of laid-paper tooth, drawn rather than downloaded. */
+  background-image:
+    radial-gradient(circle at 18% 12%, rgb(201 162 39 / 0.045), transparent 42%),
+    radial-gradient(circle at 82% 78%, rgb(30 64 50 / 0.035), transparent 46%);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; margin: 0; line-height: 1.2; }
+
+a { color: var(--green); text-underline-offset: 3px; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+::selection { background: var(--gold-light); color: var(--green-900); }
+
+:focus-visible {
+  outline: 2px solid var(--gold-dark);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ------------------------------------------------------------ wordmark */
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  color: var(--green);
+  line-height: 1;
+}
+.wordmark--lg { font-size: 2.15rem; }
+.wordmark--sm { font-size: 1.2rem; }
+
+.tagline {
+  font-size: 0.62rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--oxblood);
+  margin: 0.4rem 0 0;
+}
+
+.crest { display: block; }
+.crest svg { display: block; width: 100%; height: auto; }
+
+/* Gold hairline used as a divider throughout, in place of heavy borders. */
+.rule {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--gold) 18%, var(--gold) 82%, transparent);
+  opacity: 0.55;
+  margin: 1.5rem 0;
+}
+.rule--tight { margin: 0.85rem 0; }
+
+/* ----------------------------------------------------------- eyebrow */
+.eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  font-weight: 600;
+  margin: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  margin: 0 0 0.15rem;
+}
+.section-title h2 { font-size: 1.6rem; color: var(--green); letter-spacing: 0.01em; }
+.section-note { font-style: italic; color: var(--muted); font-size: 0.9rem; margin: 0.1rem 0 0; }
+
+/* ------------------------------------------------------------- panels */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.panel--flush { border-radius: 0; border-left: 0; border-right: 0; }
+.panel__head {
+  padding: 1rem 1.25rem 0.85rem;
+  border-bottom: 1px solid var(--rule-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.panel__body { padding: 1.1rem 1.25rem; }
+
+/* ------------------------------------------------------------ buttons */
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--green);
+  --btn-border: var(--rule);
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.55rem 1.35rem;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border: 1px solid var(--btn-border);
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 0.94rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--t) var(--ease), color var(--t) var(--ease),
+    border-color var(--t) var(--ease), transform var(--t-fast) var(--ease),
+    box-shadow var(--t) var(--ease);
+}
+.btn:hover:not(:disabled) { border-color: var(--gold); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn--primary { --btn-bg: var(--green); --btn-fg: var(--cream); --btn-border: var(--green); }
+.btn--primary:hover:not(:disabled) { --btn-bg: var(--green-600); --btn-border: var(--gold); }
+
+.btn--gold { --btn-bg: var(--gold); --btn-fg: var(--green-900); --btn-border: var(--gold-dark); }
+.btn--gold:hover:not(:disabled) { --btn-bg: var(--gold-light); }
+
+.btn--danger { --btn-fg: var(--oxblood); --btn-border: #e0c4c4; }
+.btn--danger:hover:not(:disabled) { --btn-bg: var(--oxblood); --btn-fg: var(--cream); --btn-border: var(--oxblood); }
+
+.btn--ghost { --btn-border: transparent; --btn-fg: var(--ink-soft); }
+.btn--ghost:hover:not(:disabled) { --btn-bg: var(--parchment); --btn-border: var(--rule); }
+
+.btn--sm { min-height: 34px; padding: 0.3rem 0.85rem; font-size: 0.78rem; letter-spacing: 0.07em; }
+.btn--block { width: 100%; }
+
+/* ------------------------------------------------------------- fields */
+.field { display: block; margin-bottom: 1rem; }
+.field__label {
+  display: block;
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+.field__hint { font-size: 0.82rem; font-style: italic; color: var(--muted); margin: 0.35rem 0 0; }
+
+.input, .textarea, .select {
+  width: 100%;
+  padding: 0.62rem 0.8rem;
+  background: var(--cream);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  transition: border-color var(--t) var(--ease), background var(--t) var(--ease);
+}
+.input:focus, .textarea:focus, .select:focus {
+  border-color: var(--gold);
+  background: var(--card);
+  outline: none;
+}
+.textarea { min-height: 84px; resize: vertical; line-height: 1.5; }
+
+/* -------------------------------------------------------------- price */
+.price {
+  font-family: var(--font-numeric);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--green);
+  white-space: nowrap;
+}
+.price--muted { color: var(--muted); font-weight: 400; }
+
+/* ------------------------------------------------------------- badges */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.16rem 0.55rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  font-size: 0.63rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: var(--parchment);
+  white-space: nowrap;
+}
+.tag--gold { border-color: var(--gold); background: var(--gold-wash); color: var(--gold-dark); }
+.tag--green { border-color: #c3d6cb; background: #eaf2ed; color: var(--green); }
+.tag--allergy {
+  border-color: var(--oxblood);
+  background: var(--oxblood-100);
+  color: var(--oxblood);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+.tag--off { border-color: var(--rule); background: transparent; color: var(--muted); }
+
+/* --------------------------------------------------------- order age */
+/* Green under ten minutes, amber to twenty, oxblood beyond — the pace guard. */
+.age { font-variant-numeric: tabular-nums; font-weight: 600; letter-spacing: 0.04em; }
+.age--fresh { color: var(--green-600); }
+.age--warn { color: #a8781a; }
+.age--late { color: var(--oxblood); }
+
+/* --------------------------------------------------------- empty state */
+.empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--muted);
+  font-style: italic;
+}
+.empty__mark { width: 92px; margin: 0 auto 1.1rem; opacity: 0.32; }
+
+/* ------------------------------------------------------------ toasts */
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.25rem + var(--safe-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  z-index: 90;
+  width: min(30rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+.toast {
+  background: var(--green-900);
+  color: var(--cream);
+  border: 1px solid var(--gold-dark);
+  border-radius: var(--radius);
+  padding: 0.7rem 1rem;
+  font-size: 0.92rem;
+  box-shadow: var(--shadow-lift);
+  animation: rise var(--t-slow) var(--ease);
+}
+.toast--warn { background: var(--oxblood); border-color: #b06a71; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.fade-in { animation: fade-in var(--t-slow) var(--ease); }
+
+/* ------------------------------------------------------- connection */
+.offline-bar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--oxblood);
+  color: var(--cream);
+  text-align: center;
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------------- utilities */
+.stack > * + * { margin-top: var(--gap, 1rem); }
+.row { display: flex; align-items: center; gap: 0.75rem; }
+.row--between { justify-content: space-between; }
+.row--wrap { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.muted { color: var(--muted); }
+.italic { font-style: italic; }
+.center { text-align: center; }
+.nowrap { white-space: nowrap; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
