@@ -10,6 +10,11 @@
   "engines": {
     "node": ">=20.0.0"
   },
+  "allowScripts": {
+    "better-sqlite3": true,
+    "esbuild": true,
+    "fsevents": true
+  },
   "scripts": {
     "dev": "concurrently -n server,web -c green,yellow \"npm:dev:server\" \"npm:dev:web\"",
     "dev:server": "npm --workspace server run dev",
