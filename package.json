@@ -12,7 +12,7 @@
   },
   "allowScripts": {
     "better-sqlite3": true,
-    "esbuild": true,
+    "esbuild@0.25.12": true,
     "fsevents": true
   },
   "scripts": {
