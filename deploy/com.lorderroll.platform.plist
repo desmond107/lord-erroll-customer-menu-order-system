@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The Lord Erroll ordering platform — launchd daemon template.
+
+  Placeholders (__ROOT__, __USER__, __NODE__) are substituted by
+  deploy/install.sh. Installed to /Library/LaunchDaemons so it starts at boot
+  without anyone logging in, which a machine under the bar counter never does.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.lorderroll.platform</string>
+
+  <!-- node is invoked directly, not through npm, so that launchd's SIGTERM
+       reaches the handler that closes the database cleanly. -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>__ROOT__/server/src/index.js</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__ROOT__</string>
+
+  <key>UserName</key>
+  <string>__USER__</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>NODE_ENV</key>
+    <string>production</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>5</integer>
+
+  <key>StandardOutPath</key>
+  <string>/var/log/lord-erroll.log</string>
+  <key>StandardErrorPath</key>
+  <string>/var/log/lord-erroll.err.log</string>
+</dict>
+</plist>

@@ -1,0 +1,50 @@
+# The Lord Erroll ordering platform — systemd unit template.
+#
+# Placeholders (__ROOT__, __USER__, __GROUP__, __NODE__, __BACKUP_DIR__) are
+# substituted by deploy/install.sh. To install by hand, copy this file to
+# /etc/systemd/system/lord-erroll.service and replace them yourself.
+
+[Unit]
+Description=The Lord Erroll ordering platform
+Documentation=file://__ROOT__/docs/deployment.md
+# Service must survive an internet outage, so this waits for the local network
+# to be configured, not for any route to the outside world.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__USER__
+Group=__GROUP__
+WorkingDirectory=__ROOT__
+
+# node is invoked directly rather than through npm. npm would sit between
+# systemd and the server as an extra process, and SIGTERM would reach the
+# wrapper instead of the handler that closes the database cleanly.
+ExecStart=__NODE__ __ROOT__/server/src/index.js
+Environment=NODE_ENV=production
+
+# A restaurant floor cannot wait for someone to notice the server died.
+Restart=always
+RestartSec=5
+
+# The server closes the HTTP listener and the database on SIGTERM, then hard
+# exits after five seconds. Fifteen leaves room for that to finish.
+KillSignal=SIGTERM
+TimeoutStopSec=15
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lord-erroll
+
+# Modest hardening. The database and the backup destination must stay writable;
+# the leading "-" on the backup path means an unmounted drive does not stop the
+# unit from starting, it only stops that night's snapshot.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=false
+ReadWritePaths=__ROOT__/data -__BACKUP_DIR__
+
+[Install]
+WantedBy=multi-user.target

@@ -37,6 +37,21 @@ internet for service to work.
 
 ## 3. Install
 
+The steps below are what the installer in [`deploy/`](../deploy/README.md) does
+for you. To script it instead, on Linux or macOS:
+
+```bash
+git clone <this repository> /opt/lord-erroll && cd /opt/lord-erroll
+./deploy/install.sh --service \
+  --base-url http://192.168.1.50:4000 \
+  --backup-dir /mnt/backup/lord-erroll --open-firewall
+```
+
+On Windows, from an elevated PowerShell, `.\deploy\install.ps1 -Service`.
+That also installs the boot service covered in section 4, so you can skip it.
+
+To do it by hand:
+
 ```bash
 git clone <this repository> /opt/lord-erroll
 cd /opt/lord-erroll
@@ -73,7 +88,9 @@ the restaurant network before going further.
 ## 4. Keep it running
 
 Run it under the operating system's own service manager so it restarts after a power
-cut. On Linux, `/etc/systemd/system/lord-erroll.service`:
+cut. `./deploy/install.sh --service` does this, filling in the templates in
+[`deploy/`](../deploy/README.md). To write the unit yourself, on Linux,
+`/etc/systemd/system/lord-erroll.service`:
 
 ```ini
 [Unit]
@@ -98,7 +115,9 @@ sudo systemctl enable --now lord-erroll
 sudo systemctl status lord-erroll
 ```
 
-On macOS, use a `launchd` plist with `KeepAlive` set.
+On macOS, use a `launchd` plist with `KeepAlive` set; there is one ready to fill in
+at `deploy/com.lorderroll.platform.plist`. On Windows, register a Scheduled Task
+that runs at startup as SYSTEM, which `deploy\install.ps1 -Service` does.
 
 ---
 
