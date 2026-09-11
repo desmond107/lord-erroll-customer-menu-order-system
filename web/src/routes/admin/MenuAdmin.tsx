@@ -191,9 +191,14 @@ export function MenuAdmin() {
           />
           <ReviewList
             title="Allergens not signed off by the chef"
-            note="Guests are told to declare allergies, so this list matters more than the rest."
+            note="Guests are told to declare allergies, so this list matters more than the rest. A chef signs these off in Allergen sign-off; a manager editing an item here cannot."
             rows={review.allergensUnverified.map((r) => `${r.category} · ${r.name}`)}
           />
+          {review.allergensUnverified.length > 0 && (
+            <p className="section-note">
+              <a className="btn btn--ghost btn--sm" href="/allergens">Open allergen sign-off</a>
+            </p>
+          )}
           <ReviewList
             title="No description"
             note="The dish shows with its name and price only."
@@ -299,8 +304,9 @@ function ItemEditor({
         price: item.variants.length ? undefined : form.price === '' ? null : Number(form.price),
         allergens: list(form.allergens),
         dietary: list(form.dietary),
-        // Saving the sheet is the chef's sign-off on this item's allergen list.
-        allergensVerified: true,
+        // Deliberately not signing off here. Saving a menu sheet is a manager
+        // editing an item; certifying its allergens is a chef's separate act,
+        // in Allergen sign-off.
       });
       await Promise.all(
         variants.map((v) =>

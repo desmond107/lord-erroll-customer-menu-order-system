@@ -22,6 +22,7 @@ import { billsRouter } from './routes/bills.js';
 import { adminRouter } from './routes/admin.js';
 import { reportsRouter } from './routes/reports.js';
 import { qrRouter } from './routes/qr.js';
+import { allergensRouter } from './routes/allergens.js';
 
 migrate();
 
@@ -118,6 +119,7 @@ app.use('/api/bills', billsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/qr', qrRouter);
+app.use('/api/allergens', allergensRouter);
 
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Unknown endpoint.' }));
 

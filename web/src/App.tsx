@@ -5,6 +5,7 @@ import { StaffLogin } from './routes/staff/StaffLogin';
 import { WaiterApp } from './routes/waiter/WaiterApp';
 import { StationApp } from './routes/display/StationApp';
 import { AdminApp } from './routes/admin/AdminApp';
+import { AllergenSignOff } from './routes/allergens/AllergenSignOff';
 import { RequireRole } from './routes/staff/RequireRole';
 
 export function App() {
@@ -39,6 +40,17 @@ export function App() {
         element={
           <RequireRole roles={['bar', 'manager', 'admin']}>
             <StationApp station="bar" />
+          </RequireRole>
+        }
+      />
+
+      {/* The chef's screen. Managers can reach it too, but the kitchen is who
+          signs an allergen list off, so the kitchen role is the point of it. */}
+      <Route
+        path="/allergens"
+        element={
+          <RequireRole roles={['kitchen', 'manager', 'admin']}>
+            <AllergenSignOff />
           </RequireRole>
         }
       />

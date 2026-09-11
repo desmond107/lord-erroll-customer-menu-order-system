@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS menu_items (
   is_set_menu   INTEGER NOT NULL DEFAULT 0,  -- priced per guest, choices picked per cover
   price_review  INTEGER NOT NULL DEFAULT 0,  -- 1 = price faint/missing on the source menu
   allergen_review INTEGER NOT NULL DEFAULT 1, -- 1 = allergen list not yet signed off by the chef
+  allergen_signed_by TEXT,                   -- name of the chef who signed the list off
+  allergen_signed_at TEXT,                   -- when they signed it
   available     INTEGER NOT NULL DEFAULT 1,  -- 0 = 86'd
   unavailable_reason TEXT,
   sort_order    INTEGER NOT NULL DEFAULT 0,

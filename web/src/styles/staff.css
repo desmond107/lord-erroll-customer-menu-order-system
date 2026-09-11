@@ -494,3 +494,16 @@
 .report-date .field__label { color: var(--gold-dark); }
 .report-date .input { min-width: 9.5rem; }
 .report-presets { align-self: flex-end; }
+
+/* ------------------------------------------------- allergen sign-off */
+/* An item still to be checked is the one the chef must look at, so it is
+   marked out rather than faded back. Signed-off items recede instead. */
+.allergen-item {
+  border-left: 3px solid var(--gold);
+  padding-left: 0.9rem;
+}
+.allergen-item--signed {
+  border-left-color: var(--rule);
+  opacity: 0.72;
+}
+.allergen-item .chip-set { margin: 0.5rem 0; }

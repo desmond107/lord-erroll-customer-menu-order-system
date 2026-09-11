@@ -158,8 +158,20 @@ adminRouter.patch('/menu/items/:id', (req, res) => {
   }
   if (b.priceUsd !== undefined) fields.price_usd = numOrNull(b.priceUsd);
   if (b.dietary !== undefined) fields.dietary = JSON.stringify(b.dietary);
-  if (b.allergens !== undefined) fields.allergens = JSON.stringify(b.allergens);
-  if (b.allergensVerified !== undefined) fields.allergen_review = b.allergensVerified ? 0 : 1;
+  if (b.allergens !== undefined) {
+    fields.allergens = JSON.stringify(b.allergens);
+    // Changing what is in a dish invalidates the chef's signature on the old
+    // list. Re-signing is a deliberate act in Allergen sign-off, not a side
+    // effect of a manager editing the description.
+    fields.allergen_review = 1;
+    fields.allergen_signed_by = null;
+    fields.allergen_signed_at = null;
+  }
+  if (b.allergensVerified !== undefined) {
+    fields.allergen_review = b.allergensVerified ? 0 : 1;
+    fields.allergen_signed_by = b.allergensVerified ? req.staff.name : null;
+    fields.allergen_signed_at = b.allergensVerified ? new Date().toISOString() : null;
+  }
   if (!Object.keys(fields).length) return res.status(400).json({ error: 'Nothing to update.' });
 
   fields.updated_at = new Date().toISOString().replace('T', ' ').slice(0, 19);

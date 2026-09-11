@@ -17,6 +17,23 @@ db.pragma('busy_timeout = 5000');
 export function migrate() {
   const schemaPath = new URL('./schema.sql', import.meta.url);
   db.exec(fs.readFileSync(schemaPath, 'utf8'));
+  addMissingColumns();
+}
+
+/**
+ * `CREATE TABLE IF NOT EXISTS` leaves an existing table alone, so a column added
+ * to the schema never reaches a database that already has the table. These run
+ * the missing ALTERs instead, which SQLite has no IF NOT EXISTS form for.
+ */
+function addMissingColumns() {
+  const additions = [
+    ['menu_items', 'allergen_signed_by', 'TEXT'],
+    ['menu_items', 'allergen_signed_at', 'TEXT'],
+  ];
+  for (const [table, column, type] of additions) {
+    const present = db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === column);
+    if (!present) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+  }
 }
 
 /** Wrap a function so every statement inside runs in one transaction. */
