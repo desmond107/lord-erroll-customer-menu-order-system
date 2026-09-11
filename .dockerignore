@@ -1,0 +1,17 @@
+# The build context is the repository root, and most of it must not reach the
+# image. The .env line matters most: it holds the session secret and would
+# otherwise be baked into a layer.
+.env
+.env.*
+!.env.example
+node_modules
+**/node_modules
+web/dist
+data
+deploy/cloud/.env
+.git
+.gitignore
+.DS_Store
+**/.DS_Store
+*.log
+web/tsconfig.tsbuildinfo

@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import { verifyToken } from './auth.js';
 import { db } from '../db.js';
+import { config } from '../config.js';
 
 let io = null;
 
@@ -13,8 +14,14 @@ export const rooms = {
 
 export function initRealtime(httpServer) {
   io = new Server(httpServer, {
-    // Everything stays on the LAN; any origin on the restaurant network is fine.
-    cors: { origin: true, credentials: true },
+    // The guest app and every staff screen are served by this same process, so
+    // the browser connects same-origin and no allowance is needed for them. On
+    // the LAN any origin on the restaurant network is fine. Facing the internet
+    // it is not: `origin: true` reflects whatever origin asks and, paired with
+    // credentials, lets a page on any site open an authenticated socket.
+    cors: config.isPublic
+      ? { origin: config.allowedOrigins, credentials: true }
+      : { origin: true, credentials: true },
     // Long polling fallback matters: staff tablets roam between access points.
     transports: ['websocket', 'polling'],
     pingInterval: 10000,

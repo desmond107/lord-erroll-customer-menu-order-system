@@ -1,0 +1,45 @@
+# The hosted stack: the platform itself, and Caddy in front of it for TLS.
+#
+# Run exactly one copy of `app`. Its database is a single SQLite file on a
+# volume, and a second replica writing to the same file would corrupt it.
+
+services:
+  app:
+    build:
+      # The whole repository, because the image builds the guest app from source.
+      context: ../..
+      dockerfile: deploy/cloud/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - data:/data
+      - backups:/backups
+    # Deliberately not published to the host. Only Caddy reaches it, so there is
+    # no plain-HTTP way in past the TLS terminator.
+    expose:
+      - "4000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?set SITE_ADDRESS in deploy/cloud/.env}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in deploy/cloud/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Issued certificates. Losing this volume means re-requesting them and
+      # meeting Let's Encrypt's rate limits at the worst possible moment.
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  data:
+  backups:
+  caddy_data:
+  caddy_config:

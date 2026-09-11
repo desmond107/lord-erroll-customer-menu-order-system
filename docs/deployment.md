@@ -3,6 +3,10 @@
 This describes putting the system into The Lord Erroll so that taking, routing and
 serving an order never depends on the internet.
 
+To run it on a rented server reachable from anywhere instead, see
+[cloud-hosting.md](./cloud-hosting.md). That trades the guarantee above for
+outside access, so read its first section before choosing it.
+
 ---
 
 ## 1. What to buy

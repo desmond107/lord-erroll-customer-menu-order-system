@@ -1,0 +1,20 @@
+# TLS certificates are obtained and renewed automatically for SITE_ADDRESS, so
+# the hostname has to resolve to this machine before the stack is started.
+{
+	email {$ACME_EMAIL}
+}
+
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# Socket.io upgrades to a WebSocket on this same path; Caddy proxies that
+	# without any extra configuration, which is most of why it is here.
+	reverse_proxy app:4000 {
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

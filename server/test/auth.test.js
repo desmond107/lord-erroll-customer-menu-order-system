@@ -48,3 +48,30 @@ test('a PIN is verified against its hash, not stored in the clear', () => {
   assert.ok(loginWithPin(id, '4821'));
   assert.equal(loginWithPin(id, '4822'), null);
 });
+
+test('repeated wrong PINs lock the account out, and a correct one clears it', async () => {
+  const { loginAttempts } = await import('../src/lib/rate-limit.js');
+  const { config } = await import('../src/config.js');
+  const keys = [`ip:203.0.113.9`, 'pin:42'];
+
+  for (let i = 0; i < config.loginMaxAttempts - 1; i += 1) loginAttempts.fail(keys);
+  assert.equal(loginAttempts.blocked(keys), null, 'still open one attempt short of the limit');
+
+  loginAttempts.fail(keys);
+  const hit = loginAttempts.blocked(keys);
+  assert.ok(hit, 'the limit locks the attempt out');
+  assert.ok(hit.retryAfter > 0);
+
+  loginAttempts.clear(keys);
+  assert.equal(loginAttempts.blocked(keys), null, 'a successful sign-in wipes the count');
+});
+
+test('a lockout on one identity does not lock a different staff member out', async () => {
+  const { loginAttempts } = await import('../src/lib/rate-limit.js');
+  const { config } = await import('../src/config.js');
+
+  const attacked = ['pin:101'];
+  for (let i = 0; i < config.loginMaxAttempts; i += 1) loginAttempts.fail(attacked);
+  assert.ok(loginAttempts.blocked(attacked));
+  assert.equal(loginAttempts.blocked(['pin:102']), null);
+});

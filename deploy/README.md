@@ -4,9 +4,12 @@ Scripted install for the one machine that runs The Lord Erroll inside the
 building. Full hardware, network and go-live guidance stays in
 [../docs/deployment.md](../docs/deployment.md).
 
-> **This is not a cloud deployment.** Service must carry on when the internet
-> drops, so the server lives on the restaurant's own network. Hosting it
-> off-site puts the connection back in the ordering path.
+> **This is the on-premise install.** Service carries on when the internet
+> drops, because the server lives on the restaurant's own network. Hosting it
+> off-site puts the connection back in the ordering path, which is a real cost
+> and should be a deliberate choice — see
+> [../docs/cloud-hosting.md](../docs/cloud-hosting.md) for that path and what it
+> changes.
 
 ## What is here
 
@@ -16,6 +19,7 @@ building. Full hardware, network and go-live guidance stays in
 | `install.ps1` | Installer for Windows |
 | `lord-erroll.service` | systemd unit template, filled in by `install.sh` |
 | `com.lorderroll.platform.plist` | launchd daemon template, filled in by `install.sh` |
+| `cloud/` | Dockerfile, Compose stack and Caddy config for a hosted install |
 
 ## Linux and macOS
 

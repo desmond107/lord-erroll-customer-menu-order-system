@@ -7,7 +7,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 
-import { config } from './config.js';
+import { config, assertDeployable, usingDefaultSecret } from './config.js';
 import { db, migrate, getSetting } from './db.js';
 import { attachStaff } from './lib/auth.js';
 import { initRealtime } from './lib/realtime.js';
@@ -27,15 +27,78 @@ migrate();
 
 const app = express();
 app.disable('x-powered-by');
-app.set('trust proxy', true);
+// Only as many proxy hops as actually stand in front of this process. `true`
+// honours a forged X-Forwarded-For from any client, which would let an attacker
+// present a fresh address on every request and walk straight through the
+// sign-in rate limiter.
+app.set('trust proxy', config.trustProxy);
+app.use(securityHeaders);
+if (config.forceHttps) app.use(requireHttps);
 app.use(compression());
 app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
 if (!config.isProd) app.use(morgan('tiny'));
 app.use(attachStaff);
 
+/**
+ * Headers that cost nothing and close the cheap doors: MIME sniffing, framing
+ * the app inside someone else's page, and leaking a table's QR token in a
+ * Referer header to whatever a guest taps through to.
+ */
+function securityHeaders(req, res, next) {
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('X-Frame-Options', 'DENY');
+  res.set('Referrer-Policy', 'no-referrer');
+  res.set('Cross-Origin-Opener-Policy', 'same-origin');
+  res.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  res.set(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self'",
+      // The printable table-card sheet is generated with an inline <style>, and
+      // React writes style attributes, so inline styles have to be allowed.
+      "style-src 'self' 'unsafe-inline'",
+      // QR codes reach the browser as data URLs.
+      "img-src 'self' data:",
+      "font-src 'self' data:",
+      "connect-src 'self' ws: wss:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+    ].join('; ')
+  );
+  // Sent only over a connection that is already secure. On plain HTTP it is
+  // ignored by browsers, and on the LAN it would be a trap: a browser that
+  // cached it would refuse the restaurant's own http:// address afterwards.
+  if (config.hstsSeconds > 0 && (req.secure || req.get('x-forwarded-proto') === 'https')) {
+    res.set('Strict-Transport-Security', `max-age=${config.hstsSeconds}; includeSubDomains`);
+  }
+  next();
+}
+
+/** Upgrades plain HTTP to HTTPS when the deployment is internet-facing. */
+function requireHttps(req, res, next) {
+  if (req.secure || req.get('x-forwarded-proto') === 'https') return next();
+  // Health probes often arrive over plain HTTP from inside the network and
+  // should report on the service, not on a redirect.
+  if (req.path === '/api/health') return next();
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return res.status(403).json({ error: 'This service requires HTTPS.' });
+  }
+  return res.redirect(308, `https://${req.get('host')}${req.originalUrl}`);
+}
+
 // ------------------------------------------------------------------- API
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', (req, res) => {
+  // A probe on the public internet gets liveness and nothing else. The trading
+  // detail below it — how busy the floor is right now, the restaurant's own
+  // settings — is for the LAN and for signed-in staff, not for anyone who finds
+  // the hostname.
+  const detailed = !config.isPublic || Boolean(req.staff);
+  if (!detailed) return res.json({ ok: true, time: new Date().toISOString() });
+
   res.json({
     ok: true,
     service: 'The Lord Erroll ordering platform',
@@ -88,6 +151,14 @@ if (fs.existsSync(config.webDist)) {
   );
 }
 
+const problems = assertDeployable();
+if (problems.length) {
+  console.error('\n  Refusing to start an internet-facing server with these unresolved:\n');
+  problems.forEach((p) => console.error(`   • ${p}`));
+  console.error('\n  Fix them in .env, or set EXPOSURE=lan for an on-premise install.\n');
+  process.exit(1);
+}
+
 const server = http.createServer(app);
 initRealtime(server);
 scheduleNightlyBackup();
@@ -100,7 +171,8 @@ server.listen(config.port, config.host, () => {
   addresses.forEach((a) => console.log(`  On the LAN     http://${a}:${config.port}`));
   if (config.publicBaseUrl) console.log(`  QR codes point at  ${config.publicBaseUrl}`);
   console.log(`  Database       ${config.databasePath}`);
-  if (config.sessionSecret === 'change-me-before-go-live') {
+  console.log(`  Exposure       ${config.exposure}${config.isPublic ? ' (internet-facing: TLS, pinned origins, secure cookies)' : ' (restaurant network only)'}`);
+  if (usingDefaultSecret()) {
     console.log('\n  ⚠ SESSION_SECRET is still the default. Set it in .env before go-live.');
   }
   console.log('');

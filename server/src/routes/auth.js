@@ -3,8 +3,19 @@ import { db } from '../db.js';
 import {
   issueToken, setAuthCookie, clearAuthCookie, loginWithPin, loginWithPassword, requireStaff,
 } from '../lib/auth.js';
+import { loginAttempts, loginGuard, clientIp } from '../lib/rate-limit.js';
 
 export const authRouter = Router();
+
+// Every attempt is charged to two identities at once: the caller's address, and
+// the account being tried. Either alone is evadable — a pool of addresses hides
+// an attack on one account, and one address walking the roster hides under a
+// per-account limit — so a lockout on either stops the attempt.
+const pinKeys = (req) => [`ip:${clientIp(req)}`, `pin:${req.body?.staffId ?? 'unknown'}`];
+const passwordKeys = (req) => [
+  `ip:${clientIp(req)}`,
+  `pw:${String(req.body?.email ?? 'unknown').toLowerCase()}`,
+];
 
 /** Roster shown on the PIN pad. Names only — no secrets, no email addresses. */
 authRouter.get('/staff', (_req, res) => {
@@ -21,19 +32,27 @@ authRouter.get('/staff', (_req, res) => {
   res.json(staff.map((s) => ({ ...s, sections: s.sections ? s.sections.split(',') : [] })));
 });
 
-authRouter.post('/pin', (req, res) => {
+authRouter.post('/pin', loginGuard(pinKeys), (req, res) => {
   const { staffId, pin } = req.body ?? {};
   const staff = loginWithPin(staffId, pin);
-  if (!staff) return res.status(401).json({ error: 'That PIN was not recognised.' });
+  if (!staff) {
+    loginAttempts.fail(pinKeys(req));
+    return res.status(401).json({ error: 'That PIN was not recognised.' });
+  }
+  loginAttempts.clear(pinKeys(req));
   const token = issueToken(staff);
   setAuthCookie(res, token);
   res.json({ token, staff: profile(staff.id) });
 });
 
-authRouter.post('/password', (req, res) => {
+authRouter.post('/password', loginGuard(passwordKeys), (req, res) => {
   const { email, password } = req.body ?? {};
   const staff = loginWithPassword(email ?? '', password ?? '');
-  if (!staff) return res.status(401).json({ error: 'Those details were not recognised.' });
+  if (!staff) {
+    loginAttempts.fail(passwordKeys(req));
+    return res.status(401).json({ error: 'Those details were not recognised.' });
+  }
+  loginAttempts.clear(passwordKeys(req));
   const token = issueToken(staff);
   setAuthCookie(res, token);
   res.json({ token, staff: profile(staff.id) });

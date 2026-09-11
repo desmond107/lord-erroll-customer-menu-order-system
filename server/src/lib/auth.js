@@ -31,17 +31,24 @@ export function verifyToken(token) {
   }
 }
 
+// A cookie cleared with different attributes than it was set with is left in
+// place by the browser, so both sides read from one description.
+const cookieOptions = () => ({
+  httpOnly: true,
+  sameSite: 'lax',
+  path: '/',
+  // The restaurant LAN is plain HTTP, where `secure` would drop the cookie
+  // entirely and no one could sign in. Behind TLS it is the opposite: without
+  // it the session travels in clear text on any downgrade. So it follows the
+  // deployment rather than being fixed either way.
+  secure: config.cookieSecure,
+});
+
 export function setAuthCookie(res, token) {
-  res.cookie(COOKIE, token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: MAX_AGE_MS,
-    // The restaurant LAN is plain HTTP, so `secure` would drop the cookie entirely.
-    secure: false,
-  });
+  res.cookie(COOKIE, token, { ...cookieOptions(), maxAge: MAX_AGE_MS });
 }
 
-export const clearAuthCookie = (res) => res.clearCookie(COOKIE);
+export const clearAuthCookie = (res) => res.clearCookie(COOKIE, cookieOptions());
 
 function readToken(req) {
   const header = req.get('authorization');
